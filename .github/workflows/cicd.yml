@@ -44,15 +44,52 @@ jobs:
       - name: Install deps
         run: npm ci
       - name: Run Vitest
-        run: npx vitest run --reporter=verbose 
+        run: npx vitest run --reporter=verbose
+
+  test_integration:
+    name: Integration Tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+        - uses: actions/checkout@v4
+        - uses: actions/setup-node@v4
+          with:
+            node-version: 22
+        - name: Install dependencies
+          run: npm ci
+        - name: Install Playwright Browsers
+          run: npx playwright install --with-deps
+        - name: Run Playwright tests
+          run: npx playwright test
+        - uses: actions/upload-artifact@v4
+          if: ${{ !cancelled() }}
+          with:
+            name: Integration Tests (Playwright)
+            path: reports-e2e/html/
+            if-no-files-found: error
 
   deploy:
     name: Deploy (mock)
     runs-on: ubuntu-latest
-    needs: [test_unit]
+    needs: [test_unit, test_integration]
     container:
       image: alpine:latest
     steps:
       - name: Mock deployment
         run: echo 'Mock deployment was successful!'
 
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    needs: deploy
+    container:
+      image: mcr.microsoft.com/playwright:v1.54.2-jammy
+      options: --user 1001
+    env:
+      E2E_BASE_URL: https://spanish-cards.netlify.app/
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: npm ci
+      - name: Run Playwright E2E
+        run: npx playwright test
