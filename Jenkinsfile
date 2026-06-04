@@ -41,7 +41,8 @@ pipeline {
                         }
                     }
                     steps {
-                        sh 'npx playwright test'
+                        sh 'npm ci'
+                        sh 'npm exec -- playwright test'
                     }
                 }
             }
@@ -69,7 +70,8 @@ pipeline {
                 E2E_BASE_URL = 'https://spanish-cards.netlify.app/'
             }
             steps {
-                sh 'npx playwright test'
+                sh 'npm ci'
+                sh 'npm exec -- playwright test'
             }
         }
     }
