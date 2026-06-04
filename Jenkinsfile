@@ -73,6 +73,13 @@ pipeline {
                 sh 'npm ci'
                 sh 'npm exec -- playwright test'
             }
+            post {
+                always {
+                    // Collect Playwright test results and screenshots for debugging
+                    publishHTML(allowMissing: true, alwaysLinkToLastBuild: true, icon:'',keepAll: false, reportDir: 'reports-e2e/html/', reportFiles: 'index.html', reportName: 'Playwright Test HTML Report', reportTitles:'', useWrapperFileDirectly:true)
+                    junit stdioRetention: 'ALL', testResults: 'reports-e2e/junit/*.xml'
+                }
+            }
         }
     }
 }
